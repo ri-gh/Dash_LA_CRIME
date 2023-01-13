@@ -71,7 +71,9 @@ app.layout = html.Div(children=[
     id='my_range_slider'),
   
     html.Div(id='output-container-range-slider'),
-    dcc.Graph(id='graph_area_year')
+    dcc.Graph(id='graph_area_year'),
+    dcc.Graph(id='graph_area_year_hour'),
+    dcc.Graph(id='graph_area_year_global')
 
 
      ]
@@ -102,6 +104,8 @@ def info_return(month_choose,year_choose,area,hour_choice):
 
 
 @app.callback(dash.dependencies.Output("graph_area_year", "figure"),
+    dash.dependencies.Output("graph_area_year_hour", "figure"),
+    dash.dependencies.Output("graph_area_year_global", "figure"),
     dash.dependencies.Input("select-month", "value"),
     dash.dependencies.Input("select-year", "value"),
     dash.dependencies.Input("select-area", "value"),
@@ -111,29 +115,65 @@ def area_map(month_choose, year_choose,area,hour_choice):
     df_area = df[df['AREA NAME'].isin(area)].reset_index(drop=True) #to put several areas from the dropdown
     df_area = df_area[df_area['year'] == year_choose].reset_index(drop=True)
     df_area = df_area[df_area['month_name'] == month_choose].reset_index(drop=True)
+
+    df_line = df_area
+    df_plot_line = df_line.groupby(['AREA NAME','hour'])['Crm Cd Desc'].count()
+    df_plok =  pd.DataFrame(df_plot_line)
+    df_plok= df_plok.reset_index() # to have the multi-index data as columns of this df
+
+    fig_line = px.line(df_plok, x="hour", y='Crm Cd Desc', color='AREA NAME',
+        title= "Total crime number evolution per hour for LA's area in {} {}".format(month_choose,year_choose),
+        custom_data=['AREA NAME','hour','Crm Cd Desc'])
+    fig_line.update_layout(legend_title_text= "LA's area:",
+    xaxis_title="Hours",
+        yaxis_title="Number of crime")
+    fig_line.update_traces(
+         hovertemplate="<br>".join([
+        "Area: %{customdata[0]}",
+        "Period: {} {}".format(month_choose,year_choose),
+        "Hour: %{customdata[1]}",
+        "Total crime number: %{customdata[2]}"
+        ])
+    )
+    df_plot_bar = df_line.groupby('AREA NAME')['Crm Cd Desc'].count()
+    df_plot_bar = pd.DataFrame(df_plot_bar)
+    df_plot_bar = df_plot_bar.reset_index()
+
+    fig_bar = px.bar(df_plot_bar,x='AREA NAME', y='Crm Cd Desc',color='AREA NAME',
+    title="Global crime figures for {} {} in LA's area ".format(month_choose,year_choose),
+    custom_data=['AREA NAME','Crm Cd Desc'])
+    fig_bar.update_layout(legend_title_text= "LA's area:",
+    xaxis_title="Area",
+    yaxis_title="Number of crime")
+    fig_bar.update_traces(hovertemplate="<br>".join([
+    "Area: %{customdata[0]}",
+    "Period: {} {}".format(month_choose,year_choose),
+    "Total number of crimes: %{customdata[1]}"]))
+
     start_hour = hour_choice[0]
     end_hour = hour_choice[1]
     df_area = df_area[(df_area['hour'] >=  start_hour) & (df_area['hour'] < end_hour)].reset_index(drop=True)
 
 
     fig = px.scatter_mapbox(df_area, lat="LAT", lon="LON",color='AREA NAME',size= 'Vict Age',mapbox_style="open-street-map",
-    title="{} area LA crime map for {} {} between {}h and {}h".format(area,month_choose, year_choose,start_hour,end_hour),
-    custom_data=['Vict Age','Vict Sex','Vict Descent','Crm Cd Desc','TIME OCC','DATE OCC','LOCATION'],
+    title="LA's areas crime map for {} {} between {}h and {}h".format(month_choose, year_choose,start_hour,end_hour),
+    custom_data=['AREA NAME','Vict Age','Vict Sex','Vict Descent','Crm Cd Desc','TIME OCC','DATE OCC','LOCATION'],
     center={'lat': 34.052235, 'lon': -118.243683},#to center the map on LA
     zoom=7)
     fig.update_traces(
     hovertemplate="<br>".join([
-        "Victim age : %{customdata[0]}",
-        "Victim Sex : %{customdata[1]}",
-        "Victim Descent : %{customdata[2]}",
-        "Crime description : %{customdata[3]} ",
-        "Time : %{customdata[4]}",
-        "Date occured : %{customdata[5]}",
-        "Location : %{customdata[6]} "
+        "Area Name: %{customdata[0]}",
+        "Victim age : %{customdata[1]}",
+        "Victim Sex : %{customdata[2]}",
+        "Victim Descent : %{customdata[3]}",
+        "Crime description : %{customdata[4]} ",
+        "Time : %{customdata[5]}",
+        "Date occured : %{customdata[6]}",
+        "Location : %{customdata[7]} "
     ])
     )
 
-    return  fig
+    return   fig, fig_line, fig_bar
 
 if __name__=="__main__":
     app.run_server(debug=True)
