@@ -70,11 +70,14 @@ app.layout = html.Div(children=[
 
     id='my_range_slider'),
   
-    html.Div(id='output-container-range-slider'),
+    #html.Div(id='output-container-range-slider'),
     dcc.Graph(id='graph_area_year'),
     dcc.Graph(id='graph_area_year_hour'),
-    dcc.Graph(id='graph_area_year_global')
-
+    dcc.Graph(id='graph_area_year_global'),
+    dcc.Graph(id="graph_area_month_global"),
+    dcc.Graph(id="graph_LA_month_global"),
+    dcc.Graph(id="graph_area_month_global_crime"),
+    dcc.Graph(id="graph_area_crime_hour")
 
      ]
 )
@@ -92,7 +95,7 @@ def display_name_dept(year):
     return html.H3(children="Choose a month for year {}".format(year))
 
 
-@app.callback(dash.dependencies.Output("output-container-range-slider", "children"),
+'''@app.callback(dash.dependencies.Output("output-container-range-slider", "children"),
     dash.dependencies.Input("select-month", "value"),
     dash.dependencies.Input("select-year", "value"),
     dash.dependencies.Input("select-area", "value"),
@@ -100,12 +103,16 @@ def display_name_dept(year):
 
 def info_return(month_choose,year_choose,area,hour_choice):
 
-    return  month_choose,year_choose,area,hour_choice[0], hour_choice[1]
+    return  month_choose,year_choose,area,hour_choice[0], hour_choice[1]'''
 
 
 @app.callback(dash.dependencies.Output("graph_area_year", "figure"),
     dash.dependencies.Output("graph_area_year_hour", "figure"),
     dash.dependencies.Output("graph_area_year_global", "figure"),
+    dash.dependencies.Output("graph_area_month_global", "figure"),
+    dash.dependencies.Output("graph_LA_month_global", "figure"),
+    dash.dependencies.Output("graph_area_month_global_crime", "figure"),
+    dash.dependencies.Output("graph_area_crime_hour", "figure"),
     dash.dependencies.Input("select-month", "value"),
     dash.dependencies.Input("select-year", "value"),
     dash.dependencies.Input("select-area", "value"),
@@ -148,10 +155,10 @@ def area_map(month_choose, year_choose,area,hour_choice):
     fig_bar.update_traces(hovertemplate="<br>".join([
     "Area: %{customdata[0]}",
     "Period: {} {}".format(month_choose,year_choose),
-    "Total number of crimes: %{customdata[1]}"]))
+    "Total number of crime: %{customdata[1]}"]))
 
-    start_hour = hour_choice[0]
-    end_hour = hour_choice[1]
+    start_hour = hour_choice[0] #to have the first hour selected from the range slider
+    end_hour = hour_choice[1]   #to have the last hour selected from the range slider
     df_area = df_area[(df_area['hour'] >=  start_hour) & (df_area['hour'] < end_hour)].reset_index(drop=True)
 
 
@@ -173,7 +180,51 @@ def area_map(month_choose, year_choose,area,hour_choice):
     ])
     )
 
-    return   fig, fig_line, fig_bar
+    df_line_month = df[(df['month_name'] == month_choose) | (df['year'] == year_choose)].reset_index(drop=True)
+    df_line_month = df_line_month.groupby('hour')['Crm Cd Desc'].count()
+    df_line_month = pd.DataFrame(df_line_month)
+    df_line_month = df_line_month.reset_index()
+    fig_line_month = px.bar(df_line_month,x='hour', y='Crm Cd Desc',color= 'hour',
+    title="Global sum of crime per hour in LA for {} {}".format(month_choose,year_choose))
+    fig_line_month.update_layout(legend_title_text= "LA's area:",
+    xaxis_title="Time",
+    yaxis_title="Number of crime")
+    '''fig_line_month = px.line(df_line_month, x="hour", y='Crm Cd Desc',
+    title='Evolution of crime number per hour in LA for {} {}'.format(month_choose,year_choose))'''
+
+    df_global_per_year = df[df['year'] == year_choose].reset_index(drop=True)
+    df__month_plot = df_global_per_year.groupby('month_name')['Crm Cd Desc'].count()
+    df__month_plot = pd.DataFrame(df__month_plot)
+    df__month_plot = df__month_plot.reset_index()
+    df__month_plot['month_name'] = sorted(df__month_plot['month_name'], key=lambda t: datetime.datetime.strptime(t,'%B'))
+
+    fig_month_line = px.line(df__month_plot, x="month_name", y='Crm Cd Desc',
+    title="Evolution of crime number per month in {} for LA".format(year_choose))
+    fig_month_line.update_layout(xaxis_title="Month",
+    yaxis_title="Number of crime")
+
+    df_line_area = df[(df['month_name'] == month_choose) | (df['year'] == year_choose)].reset_index(drop=True)
+    df_line_area = df_line_area.groupby('AREA NAME')['Crm Cd Desc'].count()
+    df_line_area = pd.DataFrame(df_line_area)
+    df_line_area = df_line_area.reset_index()
+    fig_line_area = px.bar(df_line_area,x='AREA NAME', y='Crm Cd Desc',color= 'AREA NAME',
+    title="Global sum of crime per area in LA for {} {}".format(month_choose,year_choose))
+    fig_line_area.update_layout(legend_title_text= "LA's area:",
+    xaxis_title="Area name",
+    yaxis_title="Number of crime")
+
+    df_crime_per_hour = df[(df['year'] == year_choose)|(df['month_name'] == month_choose)]
+    df_crime_per_hour = df_crime_per_hour[(df_crime_per_hour['hour'] >=  start_hour) & (df_crime_per_hour['hour'] < end_hour)].reset_index(drop=True)
+    df_crime_per_hour = pd.DataFrame(df_crime_per_hour.groupby('AREA NAME')['Crm Cd Desc'].count()).reset_index()
+
+    fig_crime_per_area = px.bar(df_crime_per_hour,x='AREA NAME', y='Crm Cd Desc',color= 'Crm Cd Desc',
+    title="Global sum of crime per area in LA for {} {} between {} h and {} h".format(month_choose,year_choose,start_hour,end_hour))
+    fig_crime_per_area.update_layout(xaxis={'categoryorder':'total descending'}, #to order the bar by descending value
+    xaxis_title="Area name",
+    yaxis_title="Number of crime")
+
+
+    return   fig, fig_line, fig_line_month,fig_bar,fig_month_line ,fig_line_area , fig_crime_per_area
 
 if __name__=="__main__":
     app.run_server(debug=True)
