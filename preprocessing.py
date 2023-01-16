@@ -10,10 +10,10 @@ list_of_crime_theft = ['THEFT','ROBBERY','BURGLARY','STOLEN','VEHICLE','PICKPOCK
 simple_assault = ['SIMPLE ASSAULT']
 aggravated_assault = ['AGGRAVATED ASSAULT']
 
-#here s a list fr the remaining crime:
+#here s a list for the remaining crime:
 crime_categoy_desc_list = vandalism + list_of_crime_sex+ list_of_crime_theft+ simple_assault+aggravated_assault
 
-
+#we create several df where crime description contains the listed key word
 df_vandalism = df[df['Crm Cd Desc'].str.contains('{}'.format('|'.join(vandalism)))]
 df_vandalism['Type of crime'] = 'Vandalism'
 
@@ -29,9 +29,11 @@ df_simple_assault['Type of crime'] = 'Simple assault'
 df_aggravated_assault = df[df['Crm Cd Desc'].str.contains('{}'.format('|'.join(aggravated_assault)))]
 df_aggravated_assault['Type of crime'] = 'Aggravated assault'
 
+#the columns not containing one of the crime description keyword listed upper will be tagged as type 'other'
 df_other_crime = df[~df['Crm Cd Desc'].str.contains('{}'.format('|'.join(crime_categoy_desc_list)))]
 df_other_crime['Type of crime'] = 'other'
 
+#we'll append the full df with the new column 'Type of crime' & comments added inside
 df_to_append = [df_sex_crime ,df_theft_crime , df_simple_assault, df_aggravated_assault,df_vandalism]
 
 df_global = df_other_crime.append(df_to_append)
