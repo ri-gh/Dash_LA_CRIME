@@ -9,6 +9,10 @@ import datetime
 #https://stackoverflow.com/questions/63592900/plotly-dash-how-to-design-the-layout-using-dash-bootstrap-components
 #https://github.com/facultyai/dash-bootstrap-components/issues/286
 
+logo = 'https://www.pngfind.com/pngs/m/598-5981711_city-of-los-angeles-crest-transparent-city-of.png'
+
+logo_dash = 'https://avatars0.githubusercontent.com/u/5997976?s=400&v=4'
+
 df = pd.read_csv("LA_Crime_clean.csv")
 
 list_area = df['AREA NAME'].unique().tolist()
@@ -35,9 +39,19 @@ app.layout = html.Div([
         html.Div([
         dbc.Card(
             dbc.CardBody([
-                html.Div([
-                    html.H2("Los Angeles areas crime report analysis from 2020 until today"), #to add an header text line
-                ], style={'textAlign': 'center'}) 
+                html.Div([html.Img(src=logo, height="150px"),
+                html.P(),
+                    
+                            dbc.Row(
+                [ html.H2("Los Angeles areas crime report analysis from 2020 until today",style={'textAlign': 'center'}), #to add an header text line  #logo
+                    dbc.Col(),
+
+                ])], style={'textAlign': 'center',
+                'color':'white'},                #to change color of the written font
+
+                )
+                
+
             ])
         ),
     ]),
@@ -97,10 +111,15 @@ app.layout = html.Div([
     value='',
     multi = True,
     placeholder='Select an area...',
-    id="select-area") ]
+    id="select-area"),
+  
+    dcc.Checklist(id='select-all',                        #to add a select all tick box
+    options=[{'label': 'Select all areas', 'value': 1}]),
+    ]
     ),
     style={"width":"100%","height": "100%"})],width=4, #layout width are between 0 & 12
     align='center'), 
+
     
     dbc.Col([dbc.Button(dcc.Graph(id="graph_area_fig_pie",figure= blank_fig()),style={"width":"100%","height": "100%"})],width=4,
     align='center'),
@@ -114,7 +133,12 @@ app.layout = html.Div([
     dbc.Col([dbc.Button(dcc.Graph(id="graph_per_hour_map",figure= blank_fig()),style={"width": "100%","height": "100%"})],width=6)
     ], align='center'),
 ]), color = 'dark'
-    )])
+    ),
+        html.Br(),
+    dbc.Row([
+        dbc.Col([dbc.Button(html.Img(src=logo_dash, height="50px"),style={"width": "100%","height": "100%", "textAlign" :"left"})])
+
+    ]) ])
 
 
 @app.callback(dash.dependencies.Output("month-select-div", "children"),
@@ -137,8 +161,20 @@ def display_hour_range(hour_choice):
     # We return an H5 HTML component with the range of hour selected upper.
     return html.P(),html.Br(),html.H5(children="Select area between {}h and {}h :".format(hour_choice[0],hour_choice[1]))
 
+#to add a select all tick box
+@app.callback(
+    dash.dependencies.Output('select-area', 'value'),
+    [dash.dependencies.Input('select-all', 'value')],
+    dash.dependencies.State('select-area', 'options'),
+     )
+def test(selected, options):
+    if selected[0] == 1:
+        return [i['value'] for i in options]
+    else:
+        return options
 
-@app.callback(dash.dependencies.Output("graph_area_fig_pie", "figure"),
+@app.callback(
+    dash.dependencies.Output("graph_area_fig_pie", "figure"),
     dash.dependencies.Output("graph_day_name_area", "figure"),
     dash.dependencies.Output("graph_per_hour_line", "figure"),
     dash.dependencies.Output("graph_per_hour_map", "figure"),
@@ -161,10 +197,12 @@ def pie(month_choose, year_choose,area,hour_choice):
     df_pie_area = pd.DataFrame(df_pie_area)
     df_pie_area = df_pie_area.reset_index()
     fig_pie = px.pie(df_pie_area,values='Crm Cd Desc',names='Type of crime',
-    title='Crime type repartition in {} {} between {}h and {}h'.format(month_choose,year_choose,start_hour,end_hour),)
+    title='Repartition of crime type for selected area',)
     fig_pie.update_traces(textposition='inside', textinfo='percent+label',#to put the label inside the pie
-    hovertemplate="<br>".join(["Type of crime: %{label}",
-        "Number of crime: %{value}"] ))
+    hovertemplate="<br>".join(["Period: {} {}".format(month_choose,year_choose),
+        "Hours range: between {}h and {}h".format(start_hour,end_hour),
+        "Type of crime: %{label}",
+        "Number: %{value}"] ))
     fig_pie.update_layout(legend_title_text= "Type of crime:",
     template='plotly_dark',
     paper_bgcolor='rgba(0, 0, 0, 0)', #to change the background color of the figure
@@ -186,23 +224,24 @@ def pie(month_choose, year_choose,area,hour_choice):
     df_line_day_name = df_line_day_name.sort_values('day_ranking').reset_index(drop=True)
 
     fig_day_name_area = px.bar(df_line_day_name,x='day_name', y='Crm Cd Desc',color= 'AREA NAME',
-    title="Sum of crime per day name between {}h and {}h".format(start_hour,end_hour))
+    title="Sum of crime per day name and area")
     fig_day_name_area.update_traces(
         hovertemplate="<br>".join(["Day of the week: %{x}",
         "Number of crime: %{y}"] ))
     fig_day_name_area.update_layout(legend_title_text= "Area:",
-    xaxis_title="{} {}".format(month_choose,year_choose),
+    xaxis_title="{} {} between {}h and {}h".format(month_choose,year_choose,start_hour,end_hour),
     yaxis_title="Number of crime",
     template='plotly_dark',
     paper_bgcolor='rgba(0, 0, 0, 0)', #to change the background color of the figure
     plot_bgcolor='rgba(0, 0, 0, 0)')#to change the background colour of the graph
+    fig_day_name_area.update_xaxes(showgrid = False)
 
     df_plot_line = df_area.groupby(['AREA NAME','hour'])['Crm Cd Desc'].count()
     df_plok =  pd.DataFrame(df_plot_line)
     df_plok= df_plok.reset_index() # to have the multi-index data as columns of this df
 
     fig_line = px.line(df_plok, x="hour", y='Crm Cd Desc', color='AREA NAME',
-    title= "Crime figures evolution between {}h and {}h in {} {}".format(start_hour,end_hour,month_choose,year_choose),
+    title= "Crime number per hour between {}h and {}h in {} {}".format(start_hour,end_hour,month_choose,year_choose),
     custom_data=['AREA NAME','hour','Crm Cd Desc'])
     fig_line.update_layout(legend_title_text= "Area:",
     xaxis_title="Hours",
@@ -239,13 +278,12 @@ def pie(month_choose, year_choose,area,hour_choice):
     template='plotly_dark',
     paper_bgcolor='rgba(0, 0, 0, 0)', #to change the background color of the figure
     plot_bgcolor='rgba(0, 0, 0, 0)')#to change the background colour of the graph
-
+    fig.update_xaxes(showgrid = False, showticklabels = False, zeroline=False)
+    fig.update_yaxes(showgrid = False, showticklabels = False, zeroline=False)
 
 
     return fig_pie, fig_day_name_area, fig_line, fig
 
-
-    
 
 if __name__ == "__main__":
     app.run_server(debug=True)
