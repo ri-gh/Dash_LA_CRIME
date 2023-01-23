@@ -6,9 +6,6 @@ import plotly.express as px
 from dash import dcc
 import datetime
 
-#https://stackoverflow.com/questions/63592900/plotly-dash-how-to-design-the-layout-using-dash-bootstrap-components
-#https://github.com/facultyai/dash-bootstrap-components/issues/286
-
 logo = 'https://www.pngfind.com/pngs/m/598-5981711_city-of-los-angeles-crest-transparent-city-of.png'
 
 logo_dash = 'https://avatars0.githubusercontent.com/u/5997976?s=400&v=4'
