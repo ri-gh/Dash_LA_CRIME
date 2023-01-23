@@ -1,6 +1,9 @@
 import pandas as pd
 
-df = pd.read_csv("Crime_Data_from_2020_to_Present.csv")
+url='https://data.lacity.org/api/views/2nrs-mtv8/rows.csv?accessType=DOWNLOAD'
+
+
+df = pd.read_csv(url)
 
 #We are going to add a column 'Type of crime' to categorize each crime description given by key word
 #We instanciate a list of key word for crime
