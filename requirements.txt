@@ -1,5 +1,4 @@
 dash
-os
 gunicorn
 pandas
 plotly
