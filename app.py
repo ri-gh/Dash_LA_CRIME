@@ -11,6 +11,8 @@ url='https://data.lacity.org/api/views/2nrs-mtv8/rows.csv?accessType=DOWNLOAD'
 
 
 df = pd.read_csv(url)
+#we take a sample of the df because it'll be too heavy for deployment
+df = df.sample(100000)
 
 #We are going to add a column 'Type of crime' to categorize each crime description given by key word
 #We instanciate a list of key word for crime
