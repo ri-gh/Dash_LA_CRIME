@@ -5,6 +5,9 @@ import pandas as pd
 import plotly.express as px
 from dash import dcc
 import datetime
+import os
+
+os.system('python preprocess.py')
 
 logo = 'https://www.pngfind.com/pngs/m/598-5981711_city-of-los-angeles-crest-transparent-city-of.png'
 
@@ -28,6 +31,8 @@ def blank_fig():
 
 
 app = dash.Dash(external_stylesheets=[dbc.themes.SLATE])
+
+server = app.server
 
 app.layout = html.Div([
     dbc.Card(dbc.CardBody([
@@ -283,4 +288,4 @@ def pie(month_choose, year_choose,area,hour_choice):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(debug=False)
