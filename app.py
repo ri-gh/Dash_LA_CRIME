@@ -95,7 +95,6 @@ logo = 'https://www.pngfind.com/pngs/m/598-5981711_city-of-los-angeles-crest-tra
 
 logo_dash = 'https://avatars0.githubusercontent.com/u/5997976?s=400&v=4'
 
-df = pd.read_csv("LA_Crime_clean.csv")
 
 list_area = df['AREA NAME'].unique().tolist()
 list_year = df['year'].unique().tolist()
