@@ -29,6 +29,8 @@ def blank_fig():
 
 app = dash.Dash(external_stylesheets=[dbc.themes.SLATE])
 
+server = app.server
+
 app.layout = html.Div([
     dbc.Card(dbc.CardBody([
     html.Br(),
