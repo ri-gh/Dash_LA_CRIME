@@ -1,6 +1,6 @@
 import os
 
-os.system('python Test/preprocess.py')
+os.system('python preprocess.py') #to make the preprocess of the data with the url provided
 
-os.system('python Test/dashapp.py')
+os.system('python dashapp.py')  #to make the dashboard with plotly Dash
 
