@@ -15,8 +15,7 @@ I put a range slider regarding time to choose , a multi-option dropdown to selec
 
 I meanly used plotly.express to show graphs.
 
-Test
-__ assets -->typography.css
+      __ assets -->typography.css
 
       __ app.py
       
