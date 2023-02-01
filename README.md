@@ -19,7 +19,7 @@ FYI : App can be find @ http://riss.pythonanywhere.com/
 
 Due to conditions of free tier deployment with pythonanywhere, 
 
-I had to make some change regarding the size of the dataset (50000 lines only i.o more than 600000),
+I had to make some change regarding the size of the dataset (100000 lines only i.o more than 600000),
 
 I didn't put in my program the code to deploy the app, I just follow their tutorial and adapt my code to it.
 
