@@ -1,10 +1,10 @@
-.Select, .Select div, .Select input ,.Select-value,.Select--multi , .Select--multi .Select-value ,
-.Select-value-label, .VirtualizedSelectFocusedOption{background-color: black;
-        background: black !important;
-        color: white !important}
 
 
-.VirtualizedSelectOption {
-        background-color: black !important;
-        color: Black ;
-        }
+.Select-value-label {
+    color: blue !important;
+}
+
+
+
+
+
