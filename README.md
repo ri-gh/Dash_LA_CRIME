@@ -9,17 +9,19 @@ data description & file link can be found at :https://data.lacity.org/Public-Saf
 
 Find my preprocess.py file with the data cleaning, reformatting and analysis of what to keep, add or remove from the dataset.
 
-The app.py file is about the set up of the dash web app and the interactive callbacks to analyze by year/month/ hours & area.
+The dashapp.py file is about the set up of the dash web app and the interactive callbacks to analyze by year/month/ hours & area.
 
-I put a range slider regarding time to choose , a multi-option dropdown to select area.
+I put a range slider for hour choice  & a multi-option dropdown to select one or more areas of LA.
 
 I oonly used plotly.express to draw graphs.
 
-FYI : App can be find @ http://riss.pythonanywhere.com/
+FYI : Deployed app can be find @ http://riss.pythonanywhere.com/
 
 Due to conditions of free tier deployment with pythonanywhere, 
 
 I had to make some change regarding the size of the dataset (100000 lines only i.o more than 600000),
+
+You can find the process used on my other repo 'DASH_LACRIME_pythonanywhere'
 
 I didn't put in my program the code to deploy the app, I just follow their tutorial and adapt my code to it.
 
