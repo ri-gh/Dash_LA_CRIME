@@ -57,6 +57,9 @@ df = df_global.drop(labels = col_to_remove, axis=1)
 
 df = df.fillna("unkown")
 
+#to remove outliers related to age
+df = df[df['Vict Age'] > 0].reset_index(drop=True)
+
 #reformating the date data:
 
 df['Date Rptd'] = df['Date Rptd'].str.split(' ',expand=True)[0]
