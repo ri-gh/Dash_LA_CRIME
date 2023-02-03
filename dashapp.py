@@ -381,31 +381,42 @@ def pie(month_choose, year_choose,area,hour_choice):
         fig_line.update_xaxes(color="rgb(159, 241, 253)")#change color of xaxes labels
         fig_line.update_yaxes(color="white") #change color of yaxes labels
 
-        fig = px.scatter_mapbox(df_area, lat="LAT", lon="LON",color='AREA NAME',size= 'Vict Age',mapbox_style="carto-darkmatter",
-        title="LA's areas crime map between {}h and {}h in {}".format(start_hour,end_hour,year_choose),
-        custom_data=['AREA NAME','Vict Age','Vict Sex','Crm Cd Desc','TIME OCC','DATE OCC','LOCATION'],
-        center={'lat': 34.052235, 'lon': -118.243683},#to center the map on LA
-        zoom=6)
+        #to sort the df by month name in order, we give each month his ranking number ,we apply a lambda and add a new column
+        df_area['month_ranking'] = df_area['month_name'].apply(lambda x: 0 if x == 'January'  
+                                                        else 1 if x == 'February'
+                                                        else 2 if x == 'March'
+                                                        else 3 if x == 'April'
+                                                        else 4 if x == 'May'
+                                                        else 5 if x =='June'
+                                                        else 6 if x =='July'
+                                                        else 7 if x == 'August'
+                                                        else 8 if x == 'September'
+                                                        else 9 if x == 'October'
+                                                        else 10 if x == 'November'
+                                                        else 11 if x =='December'
+                                                        else 'nothing')
+                                                            
+        df_fig_bar = df_area.groupby(['AREA NAME','month_name','month_ranking'])['Crm Cd Desc'].count().reset_index()
+        df_fig_bar = pd.DataFrame(df_fig_bar)
+        df_fig_bar = df_fig_bar.sort_values('month_ranking').reset_index(drop=True)
+        fig = px.bar(df_fig_bar,x='month_name', y='Crm Cd Desc',color= 'AREA NAME',
+        title="Sum of crime per month and area in {}".format(year_choose))
         fig.update_traces(
-        hovertemplate="<br>".join([
-            "Area Name: %{customdata[0]}",
-            "Victim age : %{customdata[1]}",
-            "Victim Sex : %{customdata[2]}",
-            "Crime description : %{customdata[3]} ",
-            "Time : %{customdata[4]}",
-            "Date occured : %{customdata[5]}",
-            "Location : %{customdata[6]} "
-        ])
-        )
+            hovertemplate="<br>".join(["Month: %{x}",
+            'Year: {}'.format(year_choose),
+            'Range of hours: between {}h and {}h'.format(start_hour,end_hour),
+            "Number of crime: %{y}"] ))
         fig.update_layout(legend_title_text= "Area:",
+        xaxis_title="Between {}h and {}h in {}".format(start_hour,end_hour,year_choose),
+        yaxis_title="Number of crime",
         template='plotly_dark',
         title_font_color="rgb(159, 241, 253)",
         paper_bgcolor='black', #to change the background color of the figure
         plot_bgcolor='black')#to change the background colour of the graph
-        fig.update_xaxes(showgrid = False, showticklabels = False, zeroline=False)
-        fig.update_yaxes(showgrid = False, showticklabels = False, zeroline=False)
+        fig.update_xaxes(color="rgb(159, 241, 253)") #change color of xaxes labels
+        fig.update_yaxes(color="white") #change color of yaxes labels
 
-        return fig_pie, fig_day_name_area, fig_line, fig
+        return fig_pie,fig_day_name_area,fig ,fig_line
 
     else:
         df_area = df[df['month_name'] == month_choose].reset_index(drop=True)
