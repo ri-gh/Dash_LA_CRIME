@@ -39,6 +39,7 @@ def default_pie():
     df_pie_default = pd.DataFrame(df_pie_default)
 
     fig_pie_default = px.pie(df_pie_default,values='Crm Cd Desc',names='Type of crime',
+    color_discrete_sequence=px.colors.qualitative.Set1, #to change color of part of the pie
     title='Repartition of crime type for {} area'.format(area))
     fig_pie_default.update_traces(textposition='inside', textinfo='percent+label',#to put the label inside the pie
     hovertemplate="<br>".join(["Period: {} {}".format(month_choose,year_choose),
@@ -65,6 +66,7 @@ def default_bar():
     df_line_day_name = df_line_day_name.sort_values('day_ranking').reset_index()
 
     fig_day_name_area_default = px.bar(df_line_day_name,x='day_name', y='Crm Cd Desc',color= 'AREA NAME',
+    color_discrete_sequence=px.colors.qualitative.Set1, #to change color of the bar
     title="Sum of crime per day name and area")
     fig_day_name_area_default.update_traces(
         hovertemplate="<br>".join(["Day of the week: %{x}",
@@ -90,6 +92,7 @@ def default_fig_line():
     df_plok= df_plok.reset_index() # to have the multi-index data as columns of this df
 
     fig_line_default = px.line(df_plok, x="hour", y='Crm Cd Desc', color='AREA NAME',
+    color_discrete_sequence=px.colors.qualitative.Set1,
     title= "Crime number per hour between 5h and 8h in May 2020",
     custom_data=['AREA NAME','hour','Crm Cd Desc'])
     fig_line_default.update_layout(legend_title_text= "Area:",
@@ -114,6 +117,7 @@ def default_fig_line():
 
 def default_fig():
     fig_default = px.scatter_mapbox(df_default, lat="LAT", lon="LON",color='AREA NAME',size= 'Vict Age',mapbox_style="carto-darkmatter",
+    color_discrete_sequence=px.colors.qualitative.Set1,
     title="LA's areas crime map for May 2020 between 5h and 8h",
     custom_data=['AREA NAME','Vict Age','Vict Sex','Crm Cd Desc','TIME OCC','DATE OCC','LOCATION'],
     center={'lat': 34.052235, 'lon': -118.243683},#to center the map on LA
@@ -186,7 +190,7 @@ app.layout = html.Div([
 
     html.Br(),
     html.Div(id="select-hour-div",style={'color':'rgb(159, 241, 253)'}),
-    dcc.RangeSlider(min(list_hour),max(list_hour),1,allowCross=False,
+    dcc.RangeSlider(min(list_hour),max(list_hour),1,value=[5,8],allowCross=False,
     tooltip={"placement": "top", "always_visible": False},
     marks={0:{'label':'00', 'style': {'color': '#77b0b1'}},
     1:{'label':'01'},
@@ -303,65 +307,66 @@ def test(selected, options):
     dash.dependencies.Input('my_range_slider', 'value'))
 
 def pie(month_choose, year_choose,area,hour_choice):
-
-        df_area = df[df['year'] == year_choose].reset_index(drop=True)
-        df_area = df_area[df_area['AREA NAME'].isin(area)].reset_index(drop=True)          
-        start_hour = hour_choice[0] #to have the first hour selected from the range slider
-        end_hour = hour_choice[1]   #to have the last hour selected from the range slider
-        df_area = df_area[(df_area['hour'] >=  start_hour) & (df_area['hour'] <= end_hour)].reset_index(drop=True)
-
-        if month_choose == 'Whole year':
-
+    df_area = df[df['year'] == year_choose].reset_index(drop=True)
+    df_area = df_area[df_area['AREA NAME'].isin(area)].reset_index(drop=True)
+    start_hour = hour_choice[0] #to have the first hour selected from the range slider
+    end_hour = hour_choice[1]   #to have the last hour selected from the range slider
+    df_area = df_area[(df_area['hour'] >=  start_hour) & (df_area['hour'] <= end_hour)].reset_index(drop=True)
+    
+    if month_choose == 'Whole year':
             df_pie_area = df_area.groupby('Type of crime')['Crm Cd Desc'].count()
             df_pie_area = pd.DataFrame(df_pie_area)
             df_pie_area = df_pie_area.reset_index()
-
+             
             if len(area) == 1:
 
-                fig_pie = px.pie(df_pie_area,values='Crm Cd Desc',names='Type of crime',
-                title='Crime type repartition for {} in {}'.format(','.join(area),year_choose))
-                fig_pie.update_traces(textposition='inside', textinfo='percent+label',#to put the label inside the pie
-                hole=.4,
-                hovertemplate="<br>".join(["Year: {}".format(year_choose),
-                    "Hours range: between {}h and {}h".format(start_hour,end_hour),
-                    "Type of crime: %{label}",
-                    "Number: %{value}"] ))
-                fig_pie.update_layout(legend_title_text= "Type of crime:",
-                template='plotly_dark',
-                title_font_color="rgb(159, 241, 253)",
-                paper_bgcolor='black', #to change the background color of the figure
-                plot_bgcolor='black')#to change the background colour of the graph
-                fig_pie.update_xaxes(showgrid = False, showticklabels = False, zeroline=False)
-                fig_pie.update_yaxes(showgrid = False, showticklabels = False, zeroline=False)
-                fig_pie.add_annotation(text= 'Between {}h & {}h'.format(start_hour,end_hour),
-                showarrow=False, x= 0.5,y = -0.2,
-                font=dict(color="rgb(159, 241, 253)",size = 15))
+                    fig_pie = px.pie(df_pie_area,values='Crm Cd Desc',names='Type of crime',
+                    color_discrete_sequence=px.colors.qualitative.Set1,
+                    title='Crime type repartition for {} in {}'.format(','.join(area),year_choose))
+                    fig_pie.update_traces(textposition='inside', textinfo='percent+label',#to put the label inside the pie
+                    hole=.4,
+                    hovertemplate="<br>".join(["Year: {}".format(year_choose),
+                        "Hours range: between {}h and {}h".format(start_hour,end_hour),
+                        "Type of crime: %{label}",
+                        "Number: %{value}"] ))
+                    fig_pie.update_layout(legend_title_text= "Type of crime:",
+                    template='plotly_dark',
+                    title_font_color="rgb(159, 241, 253)",
+                    paper_bgcolor='black', #to change the background color of the figure
+                    plot_bgcolor='black')#to change the background colour of the graph
+                    fig_pie.update_xaxes(showgrid = False, showticklabels = False, zeroline=False)
+                    fig_pie.update_yaxes(showgrid = False, showticklabels = False, zeroline=False)
+                    fig_pie.add_annotation(text= 'Between {}h & {}h'.format(start_hour,end_hour),
+                    showarrow=False, x= 0.5,y = -0.2,
+                    font=dict(color="rgb(159, 241, 253)",size = 15))
 
             else:
-                fig_pie = px.pie(df_pie_area,values='Crm Cd Desc',names='Type of crime',
-                title='Crime type repartition for selected area in {}'.format(year_choose))
-                fig_pie.update_traces(textposition='inside', textinfo='percent+label',#to put the label inside the pie
-                hole=.4,
-                hovertemplate="<br>".join(["Year: {}".format(year_choose),
-                    "Hours range: between {}h and {}h".format(start_hour,end_hour),
-                    "Type of crime: %{label}",
-                    "Number: %{value}"] ))
-                fig_pie.update_layout(legend_title_text= "Type of crime:",
-                template='plotly_dark',
-                title_font_color="rgb(159, 241, 253)",
-                paper_bgcolor='black', #to change the background color of the figure
-                plot_bgcolor='black')#to change the background colour of the graph
-                fig_pie.update_xaxes(showgrid = False, showticklabels = False, zeroline=False)
-                fig_pie.update_yaxes(showgrid = False, showticklabels = False, zeroline=False)
-                fig_pie.add_annotation(text= 'Between {}h & {}h'.format(start_hour,end_hour),
-                showarrow=False, x= 0.5, y = -0.2,
-                font=dict(color="rgb(159, 241, 253)",size = 15))
-
+                    fig_pie = px.pie(df_pie_area,values='Crm Cd Desc',names='Type of crime',
+                    color_discrete_sequence=px.colors.qualitative.Set1,
+                    title='Crime type repartition for selected area in {}'.format(year_choose))
+                    fig_pie.update_traces(textposition='inside', textinfo='percent+label',#to put the label inside the pie
+                    hole=.4,
+                    hovertemplate="<br>".join(["Year: {}".format(year_choose),
+                        "Hours range: between {}h and {}h".format(start_hour,end_hour),
+                        "Type of crime: %{label}",
+                        "Number: %{value}"] ))
+                    fig_pie.update_layout(legend_title_text= "Type of crime:",
+                    template='plotly_dark',
+                    title_font_color="rgb(159, 241, 253)",
+                    paper_bgcolor='black', #to change the background color of the figure
+                    plot_bgcolor='black')#to change the background colour of the graph
+                    fig_pie.update_xaxes(showgrid = False, showticklabels = False, zeroline=False)
+                    fig_pie.update_yaxes(showgrid = False, showticklabels = False, zeroline=False)
+                    fig_pie.add_annotation(text= 'Between {}h & {}h'.format(start_hour,end_hour),
+                    showarrow=False, x= 0.5, y = -0.2,
+                    font=dict(color="rgb(159, 241, 253)",size = 15))
+            
             df_line_day_name = df_area.groupby(['AREA NAME','year','day_name','day_ranking'])['Crm Cd Desc'].count().reset_index()
             df_line_day_name = pd.DataFrame(df_line_day_name)
             df_line_day_name = df_line_day_name.sort_values('day_ranking').reset_index(drop=True)
 
             fig_day_name_area = px.bar(df_line_day_name,x='day_name', y='Crm Cd Desc',color= 'AREA NAME',
+            color_discrete_sequence=px.colors.qualitative.Set1,
             title="Sum of crime per day name and area in {}".format(year_choose))
             fig_day_name_area.update_traces(
                 hovertemplate="<br>".join(["Day of the week: %{x}",
@@ -383,6 +388,7 @@ def pie(month_choose, year_choose,area,hour_choice):
             df_plok= df_plok.reset_index() # to have the multi-index data as columns of this df
 
             fig_line = px.line(df_plok, x="hour", y='Crm Cd Desc', color='AREA NAME',
+            color_discrete_sequence=px.colors.qualitative.Set1,
             title= "LA's area crime number per hour between {}h and {}h in {}".format(start_hour,end_hour,year_choose),
             custom_data=['AREA NAME','hour','Crm Cd Desc'])
             fig_line.update_layout(legend_title_text= "Area:",
@@ -400,12 +406,11 @@ def pie(month_choose, year_choose,area,hour_choice):
             "Total crime number: %{customdata[2]}"
                 ])
             )
-            fig_line.update_xaxes(color="rgb(159, 241, 253)")#change color of xaxes labelsFebruary
+            fig_line.update_xaxes(color="rgb(159, 241, 253)")#change color of xaxes labels
             fig_line.update_yaxes(color="white") #change color of yaxes labels
 
-
             #to sort the df by month name in order, we give each month his ranking number ,we apply a lambda and add a new column
-            df_area['month_ranking'] = df_area['month_name'].apply(lambda x: 0 if x == 'January'  
+            df_area['month_ranking'] = df_area['month_name'].apply(lambda x: 0 if x == 'January'
                                                             else 1 if x == 'February'
                                                             else 2 if x == 'March'
                                                             else 3 if x == 'April'
@@ -423,6 +428,7 @@ def pie(month_choose, year_choose,area,hour_choice):
             df_fig_bar = pd.DataFrame(df_fig_bar)
             df_fig_bar = df_fig_bar.sort_values('month_ranking').reset_index(drop=True)
             fig = px.bar(df_fig_bar,x='month_name', y='Crm Cd Desc',color= 'AREA NAME',
+            color_discrete_sequence=px.colors.sequential.YlGnBu,
             title="Sum of crime per month and area in {}".format(year_choose))
             fig.update_traces(
                 hovertemplate="<br>".join(["Month: %{x}",
@@ -440,61 +446,45 @@ def pie(month_choose, year_choose,area,hour_choice):
             fig.update_yaxes(color="white") #change color of yaxes labels
 
             return fig_pie,fig_day_name_area,fig ,fig_line
+    
+    else:
+        df_area = df[df['month_name'] == month_choose].reset_index(drop=True)
+        df_area = df_area[df_area['year'] == year_choose].reset_index(drop=True)
+        df_area = df_area[df_area['AREA NAME'].isin(area)].reset_index(drop=True)          
+        start_hour = hour_choice[0] #to have the first hour selected from the range slider
+        end_hour = hour_choice[1]   #to have the last hour selected from the range slider
+        df_area = df_area[(df_area['hour'] >=  start_hour) & (df_area['hour'] <= end_hour)].reset_index(drop=True)
 
-        else:
-            df_area = df_area[df_area['month_name'] == month_choose].reset_index(drop=True)
 
-            df_pie_area = df_area.groupby('Type of crime')['Crm Cd Desc'].count()
-            df_pie_area = pd.DataFrame(df_pie_area)
-            df_pie_area = df_pie_area.reset_index()
-
-            if len(area) == 1:
-                fig_pie = px.pie(df_pie_area,values='Crm Cd Desc',names='Type of crime',
-                title='Crime type repartition for {} in {}'.format(','.join(area),year_choose))
-                fig_pie.update_traces(textposition='inside', textinfo='percent+label',#to put the label inside the pie
-                hole=.4,
-                hovertemplate="<br>".join(["Year: {}".format(year_choose),
-                    "Hours range: between {}h and {}h".format(start_hour,end_hour),
-                    "Type of crime: %{label}",
-                    "Number: %{value}"] ))
-                fig_pie.update_layout(legend_title_text= "Type of crime:",
-                template='plotly_dark',
-                title_font_color="rgb(159, 241, 253)",
-                paper_bgcolor='black', #to change the background color of the figure
-                plot_bgcolor='black')#to change the background colour of the graph
-                fig_pie.update_xaxes(showgrid = False, showticklabels = False, zeroline=False)
-                fig_pie.update_yaxes(showgrid = False, showticklabels = False, zeroline=False)
-                fig_pie.add_annotation(text= 'Between {}h & {}h'.format(start_hour,end_hour),
-                showarrow=False, x= 0.5,y = -0.2,
-                font=dict(color="rgb(159, 241, 253)",size = 15))
-            else:
-                df_pie_area = df_area.groupby('Type of crime')['Crm Cd Desc'].count()
-                df_pie_area = pd.DataFrame(df_pie_area)
-                df_pie_area = df_pie_area.reset_index()
-                fig_pie = px.pie(df_pie_area,values='Crm Cd Desc',names='Type of crime',
-                title='Crime type repartition for selected area')
-                fig_pie.update_traces(textposition='inside', textinfo='percent+label',#to put the label inside the pie
-                hole=.4,
-                hovertemplate="<br>".join(["Period: {} {}".format(month_choose,year_choose),
-                    "Hours range: between {}h and {}h".format(start_hour,end_hour),
-                    "Type of crime: %{label}",
-                    "Number: %{value}"] ))
-                fig_pie.update_layout(legend_title_text= "Type of crime:",
-                template='plotly_dark',
-                title_font_color="rgb(159, 241, 253)",
-                paper_bgcolor='black', #to change the background color of the figure
-                plot_bgcolor='black')#to change the background colour of the graph
-                fig_pie.update_xaxes(showgrid = False, showticklabels = False, zeroline=False)
-                fig_pie.update_yaxes(showgrid = False, showticklabels = False, zeroline=False)
-                fig_pie.add_annotation(text= 'Between {}h & {}h in {} {}'.format(start_hour,end_hour,month_choose,year_choose),
-                showarrow=False, y = -0.2,
-                font=dict(color="rgb(159, 241, 253)",size = 15))
+        df_pie_area = df_area.groupby('Type of crime')['Crm Cd Desc'].count()
+        df_pie_area = pd.DataFrame(df_pie_area)
+        df_pie_area = df_pie_area.reset_index()
+        fig_pie = px.pie(df_pie_area,values='Crm Cd Desc',names='Type of crime',
+        color_discrete_sequence=px.colors.qualitative.Set1,
+        title='Repartition of crime type for all selected area')
+        fig_pie.update_traces(textposition='inside', textinfo='percent+label',#to put the label inside the pie
+        hole=.4,
+        hovertemplate="<br>".join(["Period: {} {}".format(month_choose,year_choose),
+            "Hours range: between {}h and {}h".format(start_hour,end_hour),
+            "Type of crime: %{label}",
+            "Number: %{value}"] ))
+        fig_pie.update_layout(legend_title_text= "Type of crime:",
+        template='plotly_dark',
+        title_font_color="rgb(159, 241, 253)",
+        paper_bgcolor='black', #to change the background color of the figure
+        plot_bgcolor='black')#to change the background colour of the graph
+        fig_pie.update_xaxes(showgrid = False, showticklabels = False, zeroline=False)
+        fig_pie.update_yaxes(showgrid = False, showticklabels = False, zeroline=False)
+        fig_pie.add_annotation(text= 'Between {}h & {}h in {} {}'.format(start_hour,end_hour,month_choose,year_choose),
+        showarrow=False, y = -0.2,
+        font=dict(color="rgb(159, 241, 253)",size = 15))
 
         df_line_day_name = df_area.groupby(['AREA NAME','month_name','year','day_name','day_ranking'])['Crm Cd Desc'].count().reset_index()
         df_line_day_name = pd.DataFrame(df_line_day_name)
         df_line_day_name = df_line_day_name.sort_values('day_ranking').reset_index(drop=True)
 
         fig_day_name_area = px.bar(df_line_day_name,x='day_name', y='Crm Cd Desc',color= 'AREA NAME',
+        color_discrete_sequence=px.colors.qualitative.Set1,
         title="Sum of crime per day name and area")
         fig_day_name_area.update_traces(
             hovertemplate="<br>".join(["Day of the week: %{x}",
@@ -516,6 +506,7 @@ def pie(month_choose, year_choose,area,hour_choice):
         df_plok= df_plok.reset_index() # to have the multi-index data as columns of this df
 
         fig_line = px.line(df_plok, x="hour", y='Crm Cd Desc', color='AREA NAME',
+        color_discrete_sequence=px.colors.qualitative.Set1,
         title= "Crime number per hour between {}h and {}h in {} {}".format(start_hour,end_hour,month_choose,year_choose),
         custom_data=['AREA NAME','hour','Crm Cd Desc'])
         fig_line.update_layout(legend_title_text= "Area:",
@@ -537,6 +528,7 @@ def pie(month_choose, year_choose,area,hour_choice):
         fig_line.update_yaxes(color="white") #change color of yaxes labels
 
         fig = px.scatter_mapbox(df_area, lat="LAT", lon="LON",color='AREA NAME',size= 'Vict Age',mapbox_style="carto-darkmatter",
+        color_discrete_sequence=px.colors.qualitative.Set1,
         title="LA's areas crime map for {} {} between {}h and {}h".format(month_choose, year_choose,start_hour,end_hour),
         custom_data=['AREA NAME','Vict Age','Vict Sex','Crm Cd Desc','TIME OCC','DATE OCC','LOCATION'],
         center={'lat': 34.052235, 'lon': -118.243683},#to center the map on LA
