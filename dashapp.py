@@ -177,7 +177,13 @@ app.layout = html.Div([
     options=sorted([{"label": year, "value":year} for year in list_year], key = lambda x: x['label']),
     value='',
     multi = False,
-    style={'color': 'Blue','background-color':'rgb(159, 241, 253)'},
+    style={'color': 'Blue','background-color':'rgb(159, 241, 253)',
+    'width':'85%', #center and resize the dropdown window
+    'height':'40px',
+    'display':'inline-block'},    style={'color': 'Blue','background-color':'rgb(159, 241, 253)',
+    'width':'85%', #center and resize the dropdown window
+    'height':'40px',
+    'display':'inline-block'},
     placeholder='Select a year...',
     id="select-year"),
     html.Div(id="month-select-div",style={'color':'rgb(159, 241, 253)'}),
@@ -185,7 +191,10 @@ app.layout = html.Div([
     options = [month for month in list_month], #we didn't sorted the month alphabetically because we already sorted them by them ranking upper
     value='',
     multi = False,
-    style={'color': 'Blue','background-color':'rgb(159, 241, 253)'},
+    style={'color': 'Blue','background-color':'rgb(159, 241, 253)',
+    'width':'85%', #center and resize the dropdown window
+    'height':'40px',
+    'display':'inline-block'},
     placeholder='Select a month...'),
 
     html.Br(),
@@ -227,7 +236,8 @@ app.layout = html.Div([
     options=sorted([{"label": area, "value":area} for area in list_area], key = lambda x: x['label']),
     value='',
     multi = True,
-    style={'color': 'Blue','background-color':'rgb(159, 241, 253)'},
+    style={'color': 'Blue','background-color':'rgb(159, 241, 253)',
+    "width":"85%","height": "50%",'display':'inline-block'},
     placeholder='Select area...',
     id="select-area"),
   
